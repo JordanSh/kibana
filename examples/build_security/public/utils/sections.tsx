@@ -11,6 +11,10 @@ import { ProcessesManager } from '../pages/processes_controller/processes_manage
 import { WebHooksManager } from '../pages/web_hooks_manager/web_hooks_manager';
 import { AdmissionController } from '../pages/admission_controller/admission_controller';
 import { ROUTES } from './routes';
+import { ImpactAnalysis } from '../pages/impact_analysis/impact_analysis';
+import { PublishPolicy } from '../pages/publish_policy/publish_policy';
+import { Configuration } from '../pages/configuration/configuration';
+import { Dashboard } from '../pages/dashboard/dashboard';
 
 interface RouteDef {
   name: string;
@@ -30,7 +34,7 @@ export const pages = {
     name: 'Dashboard',
     id: 'dashboard',
     route: ROUTES.DASHBOARD,
-    component: () => <div>Home</div>,
+    component: Dashboard,
   },
   processes: {
     name: 'Processes',
@@ -51,10 +55,10 @@ export const pages = {
     component: () => <div>Compliance</div>,
   },
   configuration: {
-    route: ROUTES.CONFIGURATION,
+    route: ROUTES.CONFIGURATION.INDEX,
     name: 'Configuration',
     id: 'configuration',
-    component: () => <div>Configuration</div>,
+    component: Configuration,
   },
   decision_logs: {
     route: ROUTES.DECISION_LOGS,
@@ -82,15 +86,21 @@ export const pages = {
   },
   publish: {
     route: ROUTES.PUBLISH,
-    name: 'Publish',
+    name: 'Publish & Notify',
     id: 'publish',
-    component: () => <div>publish</div>,
+    component: PublishPolicy,
   },
   impact_analysis: {
     route: ROUTES.IMPACT_ANALYSIS,
     name: 'Impact Analysis',
     id: 'impact_analysis',
-    component: () => <div>impact analysis</div>,
+    component: ImpactAnalysis,
+  },
+  health: {
+    route: ROUTES.HEALTH,
+    name: 'System Health',
+    id: 'health',
+    component: () => <div>System Health</div>,
   },
 };
 
@@ -109,6 +119,7 @@ export const sections: SectionDef[] = [
       pages.decision_logs,
       pages.audit_logs,
       pages.impact_analysis,
+      pages.health,
     ],
   },
   {

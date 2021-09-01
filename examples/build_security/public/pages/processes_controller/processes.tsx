@@ -10,11 +10,11 @@ import React from 'react';
 import { EuiCardProps } from '@elastic/eui/src/components/card/card';
 import { EuiIcon } from '@elastic/eui';
 import { EuiStepsHorizontalProps } from '@elastic/eui/src/components/steps/steps_horizontal';
-import { useHistory, useLocation, useParams } from 'react-router-dom';
-import { pages } from '../../utils/sections';
+import { useHistory, useParams } from 'react-router-dom';
 import { ROUTES } from '../../utils/routes';
+import { GlobalContext } from '../../components/global_context';
 
-interface ProcessProps {
+export interface ProcessProps {
   card: EuiCardProps;
   steps: EuiStepsHorizontalProps['steps'];
 }
@@ -24,53 +24,101 @@ interface UseProcessReturnType {
   process: ProcessProps | undefined;
 }
 
-type ProcessID = 'publish_policy';
+export type ProcessID = false | 'publish_policy' | 'health_check';
+
+const getStatus = (condition: boolean) => (condition ? 'current' : 'incomplete');
 
 export const useProcess = (processId?: ProcessID): UseProcessReturnType => {
   const history = useHistory();
-  const location = useLocation();
   const params = useParams<{ page_id: string }>();
+  const { isGitIntegrated } = React.useContext(GlobalContext);
 
   const processes: ProcessProps[] = [
     {
       card: {
         id: 'publish_policy',
         icon: <EuiIcon size="xxl" type="dashboardApp" />,
-        title: 'Kibana',
-        description: "Example of a card's description. Stick to one or two sentences.",
-        betaBadgeLabel: 'create',
-        onClick: () => {
-          // init progress bar
-          // navigate to first step
-        },
+        title: 'Admission Control',
+        description: 'Manage your admission policy. Publish changes to the cloud.',
+        betaBadgeLabel: 'Security',
       },
       steps: [
         {
-          title: 'Manage Policy Rules',
-          status: history.location.pathname.endsWith('rules') ? 'current' : 'incomplete',
+          title: 'Enforce Mutations',
+          status: getStatus(history.location.pathname.endsWith('mutation')),
           onClick: () => {
-            history.push(ROUTES.ADMISSION_CONTROLLER.RULES);
+            history.push(ROUTES.ADMISSION_CONTROLLER.MUTATION);
+          },
+        },
+        {
+          title: 'Enforce Validations',
+          status: getStatus(history.location.pathname.endsWith('validation')),
+          onClick: () => {
+            history.push(ROUTES.ADMISSION_CONTROLLER.VALIDATION);
           },
         },
         {
           title: 'Create Tests',
-          status: history.location.pathname.endsWith('tests') ? 'current' : 'incomplete',
+          status: getStatus(history.location.pathname.endsWith('test')),
           onClick: () => {
-            history.push(ROUTES.ADMISSION_CONTROLLER.TESTS);
+            history.push(ROUTES.ADMISSION_CONTROLLER.TEST);
           },
         },
         {
           title: 'Impact Analysis',
-          status: params.page_id === 'impact_analysis' ? 'current' : 'incomplete',
+          status: getStatus(params.page_id === 'impact_analysis'),
           onClick: () => {
             history.push(ROUTES.IMPACT_ANALYSIS);
           },
         },
+        ...(!isGitIntegrated
+          ? [
+              {
+                title: 'Integrate With Github',
+                status: getStatus(history.location.pathname.endsWith('git_integration')),
+                onClick: () => {
+                  history.push(ROUTES.CONFIGURATION.GIT_INTEGRATION);
+                },
+              },
+            ]
+          : []),
         {
-          title: 'Publish and notify',
-          status: params.page_id === 'publish' ? 'current' : 'incomplete',
+          title: 'Publish and Notify',
+          status: getStatus(params.page_id === 'publish'),
           onClick: () => {
             history.push(ROUTES.PUBLISH);
+          },
+        },
+      ],
+    },
+    {
+      card: {
+        id: 'health_check',
+        icon: <EuiIcon size="xxl" type="monitoringApp" />,
+        title: 'Health Check',
+        description: 'Monitor your system metrics, decisions, and health statuses.',
+        betaBadgeLabel: 'Observability',
+      },
+      steps: [
+        {
+          title: "Check system's health",
+          status: getStatus(params.page_id === 'health'),
+          onClick: () => {
+            history.push(ROUTES.HEALTH);
+          },
+        },
+        {
+          title: 'Inspect Decision Logs',
+          status: getStatus(params.page_id === 'decision_logs'),
+          onClick: () => {
+            history.push(ROUTES.DECISION_LOGS);
+          },
+        },
+        {
+          title: "Monitor system's metrics",
+          status: getStatus(params.page_id === 'metrics'),
+          onClick: () => {
+            history.push(ROUTES.METRICS);
           },
         },
       ],
@@ -80,24 +128,7 @@ export const useProcess = (processId?: ProcessID): UseProcessReturnType => {
         icon: <EuiIcon size="xxl" type="devToolsApp" />,
         title: 'Kibana',
         description: "Example of a card's description. Stick to one or two sentences.",
-        betaBadgeLabel: 'create',
-        onClick: () => {},
-      },
-      steps: [
-        {
-          title: 'Completed step 1',
-          status: 'complete',
-          onClick: () => {},
-        },
-      ],
-    },
-    {
-      card: {
-        icon: <EuiIcon size="xxl" type="monitoringApp" />,
-        title: 'Kibana',
-        description: "Example of a card's description. Stick to one or two sentences.",
         betaBadgeLabel: 'debug',
-        onClick: () => {},
       },
       steps: [
         {
@@ -113,7 +144,6 @@ export const useProcess = (processId?: ProcessID): UseProcessReturnType => {
         title: 'Kibana',
         description: "Example of a card's description. Stick to one or two sentences.",
         betaBadgeLabel: 'monitor',
-        onClick: () => {},
       },
       steps: [
         {

@@ -6,13 +6,18 @@
  * Side Public License, v 1.
  */
 
-import React from 'react';
+import React, { useContext } from 'react';
 import { EuiFlexGroup, EuiFlexItem, EuiCard } from '@elastic/eui';
-import { useProcess } from './processes';
+import { ProcessProps, useProcess } from './processes';
+import { GlobalContext } from '../../components/global_context';
 
 export const ProcessesManager = () => {
+  const { setProcessId } = useContext(GlobalContext);
+
   const { processes } = useProcess();
-  const handleClick = (steps) => {
+  const handleClick = (card: ProcessProps['card'], steps: ProcessProps['steps']) => {
+    setProcessId(card.id);
+    // @ts-ignore
     steps[0].onClick();
   };
 
@@ -20,7 +25,7 @@ export const ProcessesManager = () => {
     <EuiFlexGroup gutterSize="l">
       {processes.map(({ card, steps }) => (
         <EuiFlexItem>
-          <EuiCard {...card} onClick={() => handleClick(steps)} />
+          <EuiCard {...card} onClick={() => handleClick(card, steps)} />
         </EuiFlexItem>
       ))}
     </EuiFlexGroup>

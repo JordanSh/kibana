@@ -13,19 +13,21 @@ import { ROUTES } from '../../utils/routes';
 import { MutationTable } from './mutation_table';
 import { TestTable } from './test_table';
 import { ValidationTable } from './validation_table';
+import { GitIntegration } from './git_integration';
+import { Settings } from './settings';
 
-export const AdmissionController = () => {
+export const Configuration = () => {
   return (
     <>
-      <Route exact path={ROUTES.ADMISSION_CONTROLLER.INDEX}>
+      <Route exact path={ROUTES.CONFIGURATION.INDEX}>
         <Redirect
-          to={generatePath(ROUTES.ADMISSION_CONTROLLER.TAB, {
-            tab_id: 'rules',
+          to={generatePath(ROUTES.CONFIGURATION.TAB, {
+            tab_id: 'settings',
           })}
         />
       </Route>
       <Route path={`/:page_id/:tab_id`}>
-        <AdmissionControllerTabs />
+        <ConfigurationTabs />
       </Route>
     </>
   );
@@ -33,23 +35,18 @@ export const AdmissionController = () => {
 
 const tabs = [
   {
-    id: 'mutation',
-    name: 'Mutations',
-    content: <MutationTable />,
+    id: 'settings',
+    name: 'Settings',
+    content: <Settings />,
   },
   {
-    id: 'validation',
-    name: 'Validations',
-    content: <ValidationTable />,
-  },
-  {
-    id: 'test',
-    name: 'Tests',
-    content: <TestTable />,
+    id: 'git_integration',
+    name: 'Git Integration',
+    content: <GitIntegration />,
   },
 ];
 
-const AdmissionControllerTabs = () => {
+const ConfigurationTabs = () => {
   const params = useParams<{ tab_id: string }>();
   const history = useHistory();
 
@@ -58,7 +55,7 @@ const AdmissionControllerTabs = () => {
       tabs={tabs}
       selectedTab={tabs.find((tab) => tab.id === params.tab_id)}
       onTabClick={(tab) => {
-        history.push(generatePath(ROUTES.ADMISSION_CONTROLLER.TAB, { tab_id: tab.id }));
+        history.push(generatePath(ROUTES.CONFIGURATION.TAB, { tab_id: tab.id }));
       }}
     />
   );
