@@ -15,6 +15,7 @@ import { ImpactAnalysis } from '../pages/impact_analysis/impact_analysis';
 import { PublishPolicy } from '../pages/publish_policy/publish_policy';
 import { Configuration } from '../pages/configuration/configuration';
 import { Dashboard } from '../pages/dashboard/dashboard';
+import { ComplianceDashboard } from '../pages/compliance_dashboard/compliance_dashboard';
 
 interface RouteDef {
   name: string;
@@ -47,12 +48,6 @@ export const pages = {
     name: 'Metrics',
     id: 'metrics',
     component: () => <div>Metrics</div>,
-  },
-  compliance: {
-    route: ROUTES.COMPLIANCE,
-    name: 'Compliance',
-    id: 'compliance',
-    component: () => <div>Compliance</div>,
   },
   configuration: {
     route: ROUTES.CONFIGURATION.INDEX,
@@ -91,7 +86,7 @@ export const pages = {
     component: PublishPolicy,
   },
   impact_analysis: {
-    route: ROUTES.IMPACT_ANALYSIS,
+    route: ROUTES.IMPACT_ANALYSIS.INDEX,
     name: 'Impact Analysis',
     id: 'impact_analysis',
     component: ImpactAnalysis,
@@ -101,6 +96,12 @@ export const pages = {
     name: 'System Health',
     id: 'health',
     component: () => <div>System Health</div>,
+  },
+  compliance_dashboard: {
+    route: ROUTES.COMPLIANCE_DASHBOARD,
+    name: 'Compliance Dashboard',
+    id: 'compliance_dashboard',
+    component: ComplianceDashboard,
   },
 };
 
@@ -114,7 +115,7 @@ export const sections: SectionDef[] = [
     name: 'Observability',
     id: 'observability',
     items: [
-      pages.compliance,
+      pages.compliance_dashboard,
       pages.metrics,
       pages.decision_logs,
       pages.audit_logs,

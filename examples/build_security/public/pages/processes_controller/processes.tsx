@@ -65,10 +65,10 @@ export const useProcess = (processId?: ProcessID): UseProcessReturnType => {
           },
         },
         {
-          title: 'Impact Analysis',
-          status: getStatus(params.page_id === 'impact_analysis'),
+          title: 'Get Summary',
+          status: getStatus(history.location.pathname.endsWith('summary')),
           onClick: () => {
-            history.push(ROUTES.IMPACT_ANALYSIS);
+            history.push(ROUTES.IMPACT_ANALYSIS.SUMMARY);
           },
         },
         ...(!isGitIntegrated
@@ -125,25 +125,44 @@ export const useProcess = (processId?: ProcessID): UseProcessReturnType => {
     },
     {
       card: {
-        icon: <EuiIcon size="xxl" type="devToolsApp" />,
-        title: 'Kibana',
-        description: "Example of a card's description. Stick to one or two sentences.",
-        betaBadgeLabel: 'debug',
+        id: 'compliance',
+        icon: <EuiIcon size="xxl" type="lensApp" />,
+        title: 'Compliance',
+        description:
+          'Get your kubernetes compliance score. Look for and fix potential problems in your policies.',
+        betaBadgeLabel: 'Search',
       },
       steps: [
         {
-          title: 'Completed step 1',
-          status: 'complete',
-          onClick: () => {},
+          title: 'Manage Your Policy',
+          status: getStatus(params.page_id === 'admission_controller'),
+          onClick: () => {
+            history.push(ROUTES.ADMISSION_CONTROLLER.MUTATION);
+          },
+        },
+        {
+          title: 'Compliance Score',
+          status: getStatus(history.location.pathname.endsWith('git_integration')),
+          onClick: () => {
+            history.push(ROUTES.IMPACT_ANALYSIS.COMPLIANCE);
+          },
+        },
+        {
+          title: 'Fix Compliance Issues',
+          status: getStatus(history.location.pathname.endsWith('analyze')),
+          onClick: () => {
+            history.push(ROUTES.IMPACT_ANALYSIS.ANALYZE);
+          },
         },
       ],
     },
     {
       card: {
-        icon: <EuiIcon size="xxl" type="lensApp" />,
-        title: 'Kibana',
-        description: "Example of a card's description. Stick to one or two sentences.",
-        betaBadgeLabel: 'monitor',
+        id: 'initial_setup',
+        icon: <EuiIcon size="xxl" type="devToolsApp" />,
+        title: 'Initial Setup',
+        description: 'Start here to initialize everything. Get your policies up and running.',
+        betaBadgeLabel: 'config',
       },
       steps: [
         {

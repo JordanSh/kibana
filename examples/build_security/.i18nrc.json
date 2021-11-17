@@ -1,0 +1,7 @@
+{
+  "prefix": "buildSecurity",
+  "paths": {
+    "buildSecurity": "."
+  },
+  "translations": ["translations/ja-JP.json"]
+}

@@ -20,14 +20,20 @@ export const ROUTES = {
   AUDIT_LOGS: '/audit_logs',
   DECISION_LOGS: '/decision_logs',
   METRICS: '/metrics',
-  COMPLIANCE: '/compliance',
+  COMPLIANCE_DASHBOARD: '/compliance_dashboard',
   CONFIGURATION: {
     INDEX: '/configuration',
     TAB: '/configuration/:tab_id',
     SETTINGS: '/configuration/settings',
     GIT_INTEGRATION: '/configuration/git_integration',
   },
-  IMPACT_ANALYSIS: '/impact_analysis',
+  IMPACT_ANALYSIS: {
+    INDEX: '/impact_analysis',
+    TAB: '/impact_analysis/:tab_id',
+    COMPLIANCE: '/impact_analysis/compliance',
+    ANALYZE: '/impact_analysis/analyze',
+    SUMMARY: '/impact_analysis/summary',
+  },
   PUBLISH: '/publish',
   HEALTH: '/health',
 };

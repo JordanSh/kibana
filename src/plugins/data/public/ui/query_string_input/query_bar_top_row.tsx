@@ -314,7 +314,7 @@ export default function QueryBarTopRow(props: QueryBarTopRowProps) {
       justifyContent="flexEnd"
     >
       {renderQueryInput()}
-      {renderSharingMetaFields()}
+      {/* <div style={{ border: '1px solid red' }}>{renderSharingMetaFields()}</div>*/}
       <EuiFlexItem grow={false}>{renderUpdateButton()}</EuiFlexItem>
     </EuiFlexGroup>
   );
