@@ -6,7 +6,14 @@
  */
 import React, { useMemo } from 'react';
 import { FormattedMessage } from '@kbn/i18n-react';
-import { EuiBottomBar, EuiSpacer, EuiText } from '@elastic/eui';
+import {
+  EuiBottomBar,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiSpacer,
+  EuiSuperSelect,
+  EuiText,
+} from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
 import { CloudPosturePageTitle } from '../../../components/cloud_posture_page_title';
 import type { FindingsBaseProps } from '../types';
@@ -93,7 +100,50 @@ export const LatestFindingsContainer = ({ dataView }: FindingsBaseProps) => {
       {error && <ErrorCallout error={error} />}
       {!error && (
         <>
-          <FindingsGroupBySelector type="default" />
+          <EuiFlexGroup>
+            <EuiFlexItem>
+              <FindingsGroupBySelector type="default" />
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiSuperSelect
+                prepend={'Check Cycle'}
+                options={[
+                  {
+                    value: 'option_one',
+                    inputDisplay: 'A few seconds ago - Latest',
+                    dropdownDisplay: (
+                      <>
+                        <strong>A few seconds ago - Latest Cycle</strong>
+                        <EuiText size="s" color="subdued">
+                          <p>92sdaf25-2345w-fdas-1345wdsf</p>
+                        </EuiText>
+                      </>
+                    ),
+                  },
+                  {
+                    value: 'option_two',
+                    inputDisplay: 'An hour ago',
+                    dropdownDisplay: (
+                      <>
+                        <strong>An hour ago</strong>
+                        <EuiText size="s" color="subdued">
+                          <p>dsf5sdg-sd90sd-234la-vsd30sk</p>
+                        </EuiText>
+                      </>
+                    ),
+                  },
+                ]}
+                valueOfSelected={'option_one'}
+                // onChange={() => {
+                //   setUrlQuery({
+                //     ...urlQuery,
+                //     query: { language: 'kuery', query: "cycle_id: 'test'" },
+                //   });
+                // }}
+                hasDividers
+              />
+            </EuiFlexItem>
+          </EuiFlexGroup>
           {findingsGroupByNone.isSuccess && !!findingsGroupByNone.data.page.length && (
             <FindingsDistributionBar
               {...{
