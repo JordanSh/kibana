@@ -157,7 +157,8 @@ const aggregateLatestFindings = async (
         index: BENCHMARK_SCORE_INDEX_DEFAULT_NS,
       },
       script: {
-        source: 'ctx._id = ctx._id + ctx._source["@timestamp"]; ctx.batch_id = params.batch_id;',
+        source:
+          'ctx._id = ctx._id + ctx._source["@timestamp"]; ctx._source.batch_id = params.batch_id;',
         lang: 'painless',
         params: {
           batch_id: performance.now(),
