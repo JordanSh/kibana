@@ -26,15 +26,43 @@ export interface ScoreTrendDoc {
   >;
 }
 
-const getScoreQuery = (): SearchRequest => ({
+// TODO: export those to functions to a hook
+export const latestSnapshotsQuery = () => ({
+  index: BENCHMARK_SCORE_INDEX_DEFAULT_NS,
+  size: 0,
+  aggs: {
+    snapshots: {
+      terms: {
+        field: 'snapshot_id',
+        order: {
+          sort_user: 'desc',
+        },
+      },
+      aggs: {
+        sort_user: {
+          min: {
+            field: '@timestamp',
+          },
+        },
+      },
+    },
+  },
+});
+
+export const getLatestSnapshots = (latestSnapshotsQueryResult) => {
+  return latestSnapshotsQueryResult.aggregations.snapshots.buckets.map((b) => b.key);
+};
+
+const getScoreQuery = (latestSnapshots): SearchRequest => ({
   index: BENCHMARK_SCORE_INDEX_DEFAULT_NS,
   size: 0,
   aggs: {
     aggs_by_snapshot: {
       terms: {
         field: 'snapshot_id',
-        size: 5,
-        order: { _key: 'desc' },
+        include: latestSnapshots,
+        // size: 5,
+        // order: { _key: 'desc' },
       },
       aggs: {
         total_findings: {
@@ -93,48 +121,24 @@ const getScoreQuery = (): SearchRequest => ({
   },
 });
 
-export const getTrendsQuery = () => ({
-  index: BENCHMARK_SCORE_INDEX_DEFAULT_NS,
-  // large number that should be sufficient for 24 hours considering we write to the score index every 5 minutes
-  size: 999,
-  sort: '@timestamp:desc',
-  query: {
-    bool: {
-      must: {
-        range: {
-          '@timestamp': {
-            gte: 'now-1d',
-            lte: 'now',
-          },
-        },
-      },
-    },
-  },
-});
-
-const latestSnapshotsQuery = () => ({
-  index: BENCHMARK_SCORE_INDEX_DEFAULT_NS,
-  size: 0,
-  aggs: {
-    snapshots: {
-      terms: {
-        field: 'snapshot_id',
-      },
-      aggs: {
-        sorted_snapshots: {
-          bucket_sort: {
-            size: 5,
-            sort: [
-              {
-                _key: { order: 'desc' },
-              },
-            ],
-          },
-        },
-      },
-    },
-  },
-});
+// export const getTrendsQuery = () => ({
+//   index: BENCHMARK_SCORE_INDEX_DEFAULT_NS,
+//   // large number that should be sufficient for 24 hours considering we write to the score index every 5 minutes
+//   size: 999,
+//   sort: '@timestamp:desc',
+//   query: {
+//     bool: {
+//       must: {
+//         range: {
+//           '@timestamp': {
+//             gte: 'now-1d',
+//             lte: 'now',
+//           },
+//         },
+//       },
+//     },
+//   },
+// });
 
 export type Trends = Array<{
   timestamp: string;
@@ -145,6 +149,7 @@ export type Trends = Array<{
 export const getTrendsFromQueryResult = (scoreTrendDocs: ScoreTrendDoc[]): Trends =>
   scoreTrendDocs.map((data) => ({
     timestamp: data['@timestamp'],
+    snapshot: data.snapshot,
     summary: {
       totalFindings: data.total_findings,
       totalFailed: data.failed_findings,
@@ -169,8 +174,9 @@ const getScoreTrendDocFromTrendsQueryResult = (trendsQueryResult: any): ScoreTre
   const scoreTrendDoc = buckets.map((bucket: any) => {
     // console.log(bucket.score_by_cluster_id);
     const timestamp = bucket.timestamp.buckets[0].key_as_string;
-
+    console.log(bucket);
     return {
+      snapshot: bucket.key,
       '@timestamp': timestamp,
       total_findings: bucket.total_findings.value,
       passed_findings: bucket.passed_findings.doc_count,
@@ -198,10 +204,14 @@ export const getTrends = async (esClient: ElasticsearchClient): Promise<Trends> 
   //   (b) => b.key
   // );
   // console.log(latestSnapshots);
-  const trendsQueryResult = await esClient.search<ScoreTrendDoc>(getScoreQuery());
+  const latestSnapshotsQueryResult = await esClient.search<ScoreTrendDoc>(latestSnapshotsQuery());
+  const latestSnapshots = getLatestSnapshots(latestSnapshotsQueryResult);
+  const trendsQueryResult = await esClient.search<ScoreTrendDoc>(getScoreQuery(latestSnapshots));
   // console.log(trendsQueryResult.aggregations.aggs_by_snapshot.buckets);
   const scoreTrendDoc = getScoreTrendDocFromTrendsQueryResult(trendsQueryResult);
   // console.log(scoreTrendDoc)
+
+  console.log({ scoreTrendDoc });
 
   // if (!trendsQueryResult.hits.hits) throw new Error('missing trend results from score index');
   //

@@ -52,6 +52,7 @@ export const getDefaultQuery = ({
 const MAX_ITEMS = 500;
 
 export const LatestFindingsContainer = ({ dataView }: FindingsBaseProps) => {
+  // const latestSnapshots =
   const getPersistedDefaultQuery = usePersistedQuery(getDefaultQuery);
   const { urlQuery, setUrlQuery } = useUrlQuery(getPersistedDefaultQuery);
 

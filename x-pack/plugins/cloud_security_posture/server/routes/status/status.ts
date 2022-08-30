@@ -10,7 +10,11 @@ import type { SavedObjectsClientContract } from '@kbn/core/server';
 import type { AgentPolicyServiceInterface, AgentService } from '@kbn/fleet-plugin/server';
 import moment from 'moment';
 import { PackagePolicy } from '@kbn/fleet-plugin/common';
-import { CLOUD_SECURITY_POSTURE_PACKAGE_NAME, STATUS_ROUTE_PATH } from '../../../common/constants';
+import {
+  BENCHMARK_SCORE_INDEX_DEFAULT_NS,
+  CLOUD_SECURITY_POSTURE_PACKAGE_NAME,
+  STATUS_ROUTE_PATH,
+} from '../../../common/constants';
 import type { CspApiRequestHandlerContext, CspRouter } from '../../types';
 import type { CspSetupStatus, CspStatusCode } from '../../../common/types';
 import {
@@ -63,6 +67,32 @@ const calculateCspStatusCode = (
   throw new Error('Could not determine csp status');
 };
 
+export const latestSnapshotsQuery = () => ({
+  index: BENCHMARK_SCORE_INDEX_DEFAULT_NS,
+  size: 0,
+  aggs: {
+    snapshots: {
+      terms: {
+        field: 'snapshot_id',
+        order: {
+          sort_user: 'desc',
+        },
+      },
+      aggs: {
+        sort_user: {
+          min: {
+            field: '@timestamp',
+          },
+        },
+      },
+    },
+  },
+});
+
+export const getLatestSnapshots = (latestSnapshotsQueryResult) => {
+  return latestSnapshotsQueryResult.aggregations.snapshots.buckets.map((b) => b.key);
+};
+
 const getCspStatus = async ({
   logger,
   esClient,
@@ -101,6 +131,8 @@ const getCspStatus = async ({
     calculateDiffFromNowInMinutes(installation?.install_started_at || MIN_DATE)
   );
 
+  const latestSnapshotsQueryResult = await esClient.asCurrentUser.search(latestSnapshotsQuery());
+
   if (status === 'not-installed')
     return {
       status,
@@ -115,6 +147,7 @@ const getCspStatus = async ({
     healthyAgents,
     installedPackagePolicies: installedPackagePoliciesTotal,
     installedPackageVersion: installation?.install_version,
+    latestSnapshots: getLatestSnapshots(latestSnapshotsQueryResult),
   };
 };
 

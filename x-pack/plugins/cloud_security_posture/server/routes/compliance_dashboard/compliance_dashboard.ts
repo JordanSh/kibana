@@ -23,14 +23,15 @@ export interface KeyDocCount<TKey = string> {
 const getClustersTrends = (clustersWithoutTrends: ClusterWithoutTrend[], trends: Trends) =>
   clustersWithoutTrends.map((cluster) => ({
     ...cluster,
-    trend: trends.map(({ timestamp, clusters: clustersTrendData }) => ({
+    trend: trends.map(({ snapshot, timestamp, clusters: clustersTrendData }) => ({
+      snapshot,
       timestamp,
       ...clustersTrendData[cluster.meta.clusterId],
     })),
   }));
 
 const getSummaryTrend = (trends: Trends) =>
-  trends.map(({ timestamp, summary }) => ({ timestamp, ...summary }));
+  trends.map(({ snapshot, timestamp, summary }) => ({ snapshot, timestamp, ...summary }));
 
 export const defineGetComplianceDashboardRoute = (router: CspRouter): void =>
   router.get(
