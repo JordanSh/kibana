@@ -38,6 +38,13 @@ export const BenchmarksSection = ({
   const { euiTheme } = useEuiTheme();
   const navToFindings = useNavigateFindings();
 
+  const handleTrendElementClick = (clusterId, elements) => {
+    const [element] = elements;
+    const [elementData] = element;
+
+    navToFindings({ cluster_id: clusterId, snapshot_id: elementData.datum.snapshot });
+  };
+
   const handleElementClick = (clusterId: string, elements: PartitionElementEvent[]) => {
     const [element] = elements;
     const [layerValue] = element;
@@ -110,6 +117,9 @@ export const BenchmarksSection = ({
                       trend={cluster.trend}
                       partitionOnElementClick={(elements) =>
                         handleElementClick(cluster.meta.clusterId, elements)
+                      }
+                      onTrendElementClick={(elements) =>
+                        handleTrendElementClick(cluster.meta.clusterId, elements)
                       }
                     />
                   </ChartPanel>

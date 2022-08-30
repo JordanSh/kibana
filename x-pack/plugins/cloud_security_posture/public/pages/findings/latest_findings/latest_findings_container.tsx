@@ -4,7 +4,7 @@
  * 2.0; you may not use this file except in compliance with the Elastic License
  * 2.0.
  */
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { FormattedMessage } from '@kbn/i18n-react';
 import {
   EuiBottomBar,
@@ -15,6 +15,8 @@ import {
   EuiText,
 } from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
+import { getFindingsQuery } from '../../../common/hooks/use_navigate_findings';
+import { useCspSetupStatusApi } from '../../../common/api/use_setup_status_api';
 import { CloudPosturePageTitle } from '../../../components/cloud_posture_page_title';
 import type { FindingsBaseProps } from '../types';
 import { FindingsTable } from './latest_findings_table';
@@ -52,9 +54,35 @@ export const getDefaultQuery = ({
 const MAX_ITEMS = 500;
 
 export const LatestFindingsContainer = ({ dataView }: FindingsBaseProps) => {
-  // const latestSnapshots =
+  const {
+    data: { latestSnapshots },
+  } = useCspSetupStatusApi();
+  const latestSnapshot = latestSnapshots[0];
   const getPersistedDefaultQuery = usePersistedQuery(getDefaultQuery);
   const { urlQuery, setUrlQuery } = useUrlQuery(getPersistedDefaultQuery);
+
+  console.log(urlQuery);
+  const test = getFindingsQuery({ a: 2 });
+  console.log({ test });
+
+  useEffect(() => {
+    const actualQuery = urlQuery.query.query;
+    const hasSnapshot = actualQuery.includes('snapshot_id');
+
+    const test = getFindingsQuery({
+      ...(!hasSnapshot && { snapshot_id: latestSnapshot }),
+    });
+
+    setUrlQuery({
+      ...urlQuery,
+      query: {
+        language: 'kuery',
+        query: `${hasSnapshot ? '' : `snapshot_id: ${latestSnapshot}`} ${
+          actualQuery.length ? `and ${actualQuery} ` : ''
+        }`,
+      },
+    });
+  }, []);
 
   /**
    * Page URL query to ES query
@@ -135,12 +163,12 @@ export const LatestFindingsContainer = ({ dataView }: FindingsBaseProps) => {
                   },
                 ]}
                 valueOfSelected={'option_one'}
-                // onChange={() => {
-                //   setUrlQuery({
-                //     ...urlQuery,
-                //     query: { language: 'kuery', query: "cycle_id: 'test'" },
-                //   });
-                // }}
+                onChange={() => {
+                  setUrlQuery({
+                    ...urlQuery,
+                    query: { language: 'kuery', query: "cycle_id: 'test'" },
+                  });
+                }}
                 hasDividers
               />
             </EuiFlexItem>

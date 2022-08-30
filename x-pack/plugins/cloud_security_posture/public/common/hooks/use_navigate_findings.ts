@@ -11,7 +11,9 @@ import { findingsNavigation } from '../navigation/constants';
 import { encodeQuery } from '../navigation/query_utils';
 import { FindingsBaseURLQuery } from '../../pages/findings/types';
 
-const getFindingsQuery = (queryValue: Query['query']): Pick<FindingsBaseURLQuery, 'query'> => {
+export const getFindingsQuery = (
+  queryValue: Query['query']
+): Pick<FindingsBaseURLQuery, 'query'> => {
   const query =
     typeof queryValue === 'string'
       ? queryValue

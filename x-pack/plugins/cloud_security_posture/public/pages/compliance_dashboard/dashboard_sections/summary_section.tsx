@@ -27,6 +27,13 @@ const summarySectionWrapperStyle = {
 export const SummarySection = ({ complianceData }: { complianceData: ComplianceDashboardData }) => {
   const navToFindings = useNavigateFindings();
 
+  const handleTrendElementClick = (elements) => {
+    const [element] = elements;
+    const [elementData] = element;
+
+    navToFindings({ snapshot_id: elementData.datum.snapshot });
+  };
+
   const handleElementClick = (elements: PartitionElementEvent[]) => {
     const [element] = elements;
     const [layerValue] = element;
@@ -59,6 +66,7 @@ export const SummarySection = ({ complianceData }: { complianceData: ComplianceD
             data={complianceData.stats}
             trend={complianceData.trend}
             partitionOnElementClick={handleElementClick}
+            onTrendElementClick={handleTrendElementClick}
           />
         </ChartPanel>
       </EuiFlexItem>
