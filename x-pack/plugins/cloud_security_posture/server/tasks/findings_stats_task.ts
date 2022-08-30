@@ -11,15 +11,9 @@ import {
   TaskManagerSetupContract,
   TaskManagerStartContract,
 } from '@kbn/task-manager-plugin/server';
-import { SearchRequest } from '@kbn/data-plugin/common';
 import { ElasticsearchClient } from '@kbn/core/server';
 import type { Logger } from '@kbn/core/server';
-import {
-  AggregatedFindingsByCluster,
-  ScoreBucket,
-  FindingsStatsTaskResult,
-  TaskHealthStatus,
-} from './types';
+import { FindingsStatsTaskResult, TaskHealthStatus } from './types';
 import {
   BENCHMARK_SCORE_INDEX_DEFAULT_NS,
   LATEST_FINDINGS_INDEX_DEFAULT_NS,
@@ -30,69 +24,61 @@ import { CspServerPluginStartServices } from '../types';
 const CSPM_FINDINGS_STATS_TASK_ID = 'cloud_security_posture-findings_stats';
 const CSPM_FINDINGS_STATS_TASK_TYPE = 'cloud_security_posture-stats_task';
 const CSPM_FINDINGS_STATS_INTERVAL = '5m';
-
-const getSnapshotQuery = (): SearchRequest => ({
-  index: LATEST_FINDINGS_INDEX_DEFAULT_NS,
-  size: 0,
-  query: {
-    match_all: {},
-  },
-});
-
-const getScoreQuery = (): SearchRequest => ({
-  index: LATEST_FINDINGS_INDEX_DEFAULT_NS,
-  size: 0,
-  query: {
-    match_all: {},
-  },
-  aggs: {
-    total_findings: {
-      value_count: {
-        field: 'result.evaluation',
-      },
-    },
-    passed_findings: {
-      filter: {
-        term: {
-          'result.evaluation': 'passed',
-        },
-      },
-    },
-    failed_findings: {
-      filter: {
-        term: {
-          'result.evaluation': 'failed',
-        },
-      },
-    },
-    score_by_cluster_id: {
-      terms: {
-        field: 'cluster_id',
-      },
-      aggregations: {
-        total_findings: {
-          value_count: {
-            field: 'result.evaluation',
-          },
-        },
-        passed_findings: {
-          filter: {
-            term: {
-              'result.evaluation': 'passed',
-            },
-          },
-        },
-        failed_findings: {
-          filter: {
-            term: {
-              'result.evaluation': 'failed',
-            },
-          },
-        },
-      },
-    },
-  },
-});
+//
+// const getScoreQuery = (): SearchRequest => ({
+//   index: LATEST_FINDINGS_INDEX_DEFAULT_NS,
+//   size: 0,
+//   query: {
+//     match_all: {},
+//   },
+//   aggs: {
+//     total_findings: {
+//       value_count: {
+//         field: 'result.evaluation',
+//       },
+//     },
+//     passed_findings: {
+//       filter: {
+//         term: {
+//           'result.evaluation': 'passed',
+//         },
+//       },
+//     },
+//     failed_findings: {
+//       filter: {
+//         term: {
+//           'result.evaluation': 'failed',
+//         },
+//       },
+//     },
+//     score_by_cluster_id: {
+//       terms: {
+//         field: 'cluster_id',
+//       },
+//       aggregations: {
+//         total_findings: {
+//           value_count: {
+//             field: 'result.evaluation',
+//           },
+//         },
+//         passed_findings: {
+//           filter: {
+//             term: {
+//               'result.evaluation': 'passed',
+//             },
+//           },
+//         },
+//         failed_findings: {
+//           filter: {
+//             term: {
+//               'result.evaluation': 'failed',
+//             },
+//           },
+//         },
+//       },
+//     },
+//   },
+// });
 
 export async function scheduleFindingsStatsTask(
   taskManager: TaskManagerStartContract,
@@ -147,8 +133,8 @@ const aggregateLatestFindings = async (
   logger: Logger
 ): Promise<TaskHealthStatus> => {
   try {
-    const startAggTime = performance.now();
-    const evaluationsQueryResult = await esClient.search<unknown, ScoreBucket>(getScoreQuery());
+    // const startAggTime = performance.now();
+    // const evaluationsQueryResult = await esClient.search<unknown, ScoreBucket>(getScoreQuery());
     const snapshotQueryResult = await esClient.reindex({
       source: {
         index: LATEST_FINDINGS_INDEX_DEFAULT_NS,
@@ -158,44 +144,44 @@ const aggregateLatestFindings = async (
       },
       script: {
         source:
-          'ctx._id = ctx._id + ctx._source["@timestamp"]; ctx._source.batch_id = params.batch_id;',
+          'ctx._id = ctx._id + ctx._source["@timestamp"]; ctx._source.snapshot_id = params.snapshot_id;',
         lang: 'painless',
         params: {
-          batch_id: performance.now(),
+          snapshot_id: performance.now(),
         },
       },
     });
 
     // console.log(snapshotQueryResult);
 
-    if (!evaluationsQueryResult.aggregations) {
-      logger.warn(`No data found in latest findings index`);
-      return 'warning';
-    }
+    // if (!evaluationsQueryResult.aggregations) {
+    //   logger.warn(`No data found in latest findings index`);
+    //   return 'warning';
+    // }
 
-    const totalAggregationTime = performance.now() - startAggTime;
-    logger.debug(
-      `Executed aggregation query [Task: ${CSPM_FINDINGS_STATS_TASK_TYPE}] [Duration: ${Number(
-        totalAggregationTime
-      ).toFixed(2)}ms]`
-    );
+    // const totalAggregationTime = performance.now() - startAggTime;
+    // logger.debug(
+    //   `Executed aggregation query [Task: ${CSPM_FINDINGS_STATS_TASK_TYPE}] [Duration: ${Number(
+    //     totalAggregationTime
+    //   ).toFixed(2)}ms]`
+    // );
 
-    const clustersStats = Object.fromEntries(
-      evaluationsQueryResult.aggregations.score_by_cluster_id.buckets.map(
-        (clusterStats: AggregatedFindingsByCluster) => {
-          return [
-            clusterStats.key,
-            {
-              total_findings: clusterStats.total_findings.value,
-              passed_findings: clusterStats.passed_findings.doc_count,
-              failed_findings: clusterStats.failed_findings.doc_count,
-            },
-          ];
-        }
-      )
-    );
+    // const clustersStats = Object.fromEntries(
+    //   evaluationsQueryResult.aggregations.score_by_cluster_id.buckets.map(
+    //     (clusterStats: AggregatedFindingsByCluster) => {
+    //       return [
+    //         clusterStats.key,
+    //         {
+    //           total_findings: clusterStats.total_findings.value,
+    //           passed_findings: clusterStats.passed_findings.doc_count,
+    //           failed_findings: clusterStats.failed_findings.doc_count,
+    //         },
+    //       ];
+    //     }
+    //   )
+    // );
 
-    const startIndexTime = performance.now();
+    // const startIndexTime = performance.now();
 
     // await esClient.index({
     //   index: BENCHMARK_SCORE_INDEX_DEFAULT_NS,
@@ -207,15 +193,15 @@ const aggregateLatestFindings = async (
     //   },
     // });
 
-    const totalIndexTime = Number(performance.now() - startIndexTime).toFixed(2);
-    logger.debug(
-      `Finished saving results [Task: ${CSPM_FINDINGS_STATS_TASK_TYPE}] [Duration: ${totalIndexTime}ms]`
-    );
-
-    const totalTaskTime = Number(performance.now() - startAggTime).toFixed(2);
-    logger.debug(
-      `Finished run ended [Task: ${CSPM_FINDINGS_STATS_TASK_TYPE}] [Duration: ${totalTaskTime}ms]`
-    );
+    // const totalIndexTime = Number(performance.now() - startIndexTime).toFixed(2);
+    // logger.debug(
+    //   `Finished saving results [Task: ${CSPM_FINDINGS_STATS_TASK_TYPE}] [Duration: ${totalIndexTime}ms]`
+    // );
+    //
+    // const totalTaskTime = Number(performance.now() - startAggTime).toFixed(2);
+    // logger.debug(
+    //   `Finished run ended [Task: ${CSPM_FINDINGS_STATS_TASK_TYPE}] [Duration: ${totalTaskTime}ms]`
+    // );
 
     return 'ok';
   } catch (errMsg) {
