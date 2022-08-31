@@ -20,7 +20,7 @@ export const getFindingsQuery = (
       : // TODO: use a tested query builder instead ASAP
         Object.entries(queryValue)
           .reduce<string[]>((a, [key, value]) => {
-            a.push(`${key}: "${value}"`);
+            a.push(`${key} : ${value}`);
             return a;
           }, [])
           .join(' and ');

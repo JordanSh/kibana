@@ -135,6 +135,7 @@ const aggregateLatestFindings = async (
   try {
     // const startAggTime = performance.now();
     // const evaluationsQueryResult = await esClient.search<unknown, ScoreBucket>(getScoreQuery());
+
     const snapshotQueryResult = await esClient.reindex({
       source: {
         index: LATEST_FINDINGS_INDEX_DEFAULT_NS,
@@ -147,7 +148,7 @@ const aggregateLatestFindings = async (
           'ctx._id = ctx._id + ctx._source["@timestamp"]; ctx._source.snapshot_id = params.snapshot_id;',
         lang: 'painless',
         params: {
-          snapshot_id: performance.now(),
+          snapshot_id: Date.now(),
         },
       },
     });
