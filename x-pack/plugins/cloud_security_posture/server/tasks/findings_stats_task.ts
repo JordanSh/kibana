@@ -136,7 +136,7 @@ const aggregateLatestFindings = async (
     // const startAggTime = performance.now();
     // const evaluationsQueryResult = await esClient.search<unknown, ScoreBucket>(getScoreQuery());
 
-    const snapshotQueryResult = await esClient.reindex({
+    await esClient.reindex({
       source: {
         index: LATEST_FINDINGS_INDEX_DEFAULT_NS,
       },
@@ -145,7 +145,9 @@ const aggregateLatestFindings = async (
       },
       script: {
         source:
-          'ctx._id = ctx._id + ctx._source["@timestamp"]; ctx._source.snapshot_id = params.snapshot_id;',
+          'ctx._id = ctx._id + ctx._source["@timestamp"];' + // create new doc id to prevent doc update
+          ' ctx._source.snapshot_id = params.snapshot_id;' + // add a common id to all docs in this reindex, so they can be grouped
+          ' ctx._source._unique_id = ctx._source.resource.id + ctx._source.rule.id;', // add unique id per doc for easier finding
         lang: 'painless',
         params: {
           snapshot_id: Date.now(),

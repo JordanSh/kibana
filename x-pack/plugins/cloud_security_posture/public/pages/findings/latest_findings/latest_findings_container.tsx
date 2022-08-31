@@ -194,6 +194,7 @@ export const LatestFindingsContainer = ({ dataView }: FindingsBaseProps) => {
       <FindingsSearchBar
         dataView={dataView}
         setQuery={(query) => {
+          console.log(query);
           setUrlQuery({ ...query, pageIndex: 0 });
         }}
         loading={findingsGroupByNone.isFetching}
@@ -253,6 +254,8 @@ export const LatestFindingsContainer = ({ dataView }: FindingsBaseProps) => {
           )}
           <EuiSpacer />
           <FindingsTable
+            latestSnapshots={latestSnapshots}
+            selectedSnapshot={getValueOfSelectedFromQuery(urlQuery)}
             loading={findingsGroupByNone.isFetching}
             items={findingsGroupByNone.data?.page || []}
             pagination={getPaginationTableParams({

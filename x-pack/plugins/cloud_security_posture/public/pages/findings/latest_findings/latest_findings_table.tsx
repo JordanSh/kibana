@@ -34,6 +34,8 @@ interface Props {
   sorting: TableProps['sorting'];
   setTableOptions(options: CriteriaWithPagination<CspFinding>): void;
   onAddFilter: OnAddFilter;
+  latestSnapshots: number[];
+  selectedSnapshot: number;
 }
 
 const FindingsTableComponent = ({
@@ -43,6 +45,8 @@ const FindingsTableComponent = ({
   sorting,
   setTableOptions,
   onAddFilter,
+  latestSnapshots,
+  selectedSnapshot,
 }: Props) => {
   const [selectedFinding, setSelectedFinding] = useState<CspFinding>();
 
@@ -107,6 +111,8 @@ const FindingsTableComponent = ({
       />
       {selectedFinding && (
         <FindingsRuleFlyout
+          selectedSnapshot={selectedSnapshot}
+          latestSnapshots={latestSnapshots}
           findings={selectedFinding}
           onClose={() => setSelectedFinding(undefined)}
         />
