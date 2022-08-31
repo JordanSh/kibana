@@ -33,6 +33,82 @@ const getClustersTrends = (clustersWithoutTrends: ClusterWithoutTrend[], trends:
 const getSummaryTrend = (trends: Trends) =>
   trends.map(({ snapshot, timestamp, summary }) => ({ snapshot, timestamp, ...summary }));
 
+const getChanges = async (esClient) => {
+  const changesQueryResult = await esClient.search({
+    size: 0,
+    aggs: {
+      aggs_by_snapshot_id: {
+        terms: {
+          field: 'snapshot_id',
+          order: {
+            _key: 'desc',
+          },
+          size: 10,
+        },
+        aggs: {
+          aggs_by_unique_id: {
+            terms: {
+              field: '_unique_id.keyword',
+              size: 1000,
+            },
+            aggs: {
+              by_evals: {
+                terms: {
+                  field: 'result.evaluation.keyword',
+                  size: 10,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const cleaner = changesQueryResult.aggregations?.aggs_by_snapshot_id?.buckets.map((b) => {
+    return {
+      snapshot_id: b.key,
+      unique_ids: b.aggs_by_unique_id.buckets.map((uniqueIdBucket) => {
+        return {
+          uniqueId: uniqueIdBucket.key,
+          evaluation: uniqueIdBucket.by_evals.buckets[0].key,
+        };
+      }),
+    };
+  });
+
+  const changes = {};
+
+  cleaner.forEach((snapshot) => {
+    snapshot.unique_ids.forEach((unique_id) => {
+      changes[unique_id.uniqueId] = {
+        ...changes[unique_id.uniqueId],
+        [snapshot.snapshot_id]: unique_id.evaluation,
+      };
+    });
+  });
+
+  console.log({ changes });
+
+  const hasChanges = Object.entries(changes).map(([key, value]) => {
+    return {
+      x: key,
+      s: Object.entries(value).map(([key2, value2]) => {
+        return key2;
+      }),
+      v: [
+        ...new Set(
+          Object.entries(value).map(([key2, value2]) => {
+            return value2;
+          })
+        ),
+      ],
+    };
+  });
+
+  return hasChanges.filter((v) => v.v.length > 1);
+};
+
 export const defineGetComplianceDashboardRoute = (router: CspRouter): void =>
   router.get(
     {
@@ -57,14 +133,16 @@ export const defineGetComplianceDashboardRoute = (router: CspRouter): void =>
           match_all: {},
         };
 
-        const [stats, groupedFindingsEvaluation, clustersWithoutTrends, trends] = await Promise.all(
-          [
+        const [stats, groupedFindingsEvaluation, clustersWithoutTrends, trends, changes] =
+          await Promise.all([
             getStats(esClient, query, pitId),
             getGroupedFindingsEvaluation(esClient, query, pitId),
             getClusters(esClient, query, pitId),
             getTrends(esClient),
-          ]
-        );
+            getChanges(esClient),
+          ]);
+
+        // console.log({ changes });
 
         // Try closing the PIT, if it fails we can safely ignore the error since it closes itself after the keep alive
         //   ends. Not waiting on the promise returned from the `closePointInTime` call to avoid delaying the request
@@ -80,6 +158,7 @@ export const defineGetComplianceDashboardRoute = (router: CspRouter): void =>
           groupedFindingsEvaluation,
           clusters,
           trend,
+          changes,
         };
 
         return response.ok({

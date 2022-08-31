@@ -174,7 +174,7 @@ const getScoreTrendDocFromTrendsQueryResult = (trendsQueryResult: any): ScoreTre
   const scoreTrendDoc = buckets.map((bucket: any) => {
     // console.log(bucket.score_by_cluster_id);
     const timestamp = bucket.timestamp.buckets[0].key_as_string;
-    console.log(bucket);
+    // console.log(bucket);
     return {
       snapshot: bucket.key,
       '@timestamp': timestamp,
@@ -211,7 +211,7 @@ export const getTrends = async (esClient: ElasticsearchClient): Promise<Trends> 
   const scoreTrendDoc = getScoreTrendDocFromTrendsQueryResult(trendsQueryResult);
   // console.log(scoreTrendDoc)
 
-  console.log({ scoreTrendDoc });
+  // console.log({ scoreTrendDoc });
 
   // if (!trendsQueryResult.hits.hits) throw new Error('missing trend results from score index');
   //
