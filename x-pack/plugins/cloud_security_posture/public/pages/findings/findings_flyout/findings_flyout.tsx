@@ -35,6 +35,7 @@ import {
 import { assertNever } from '@kbn/std';
 import { i18n } from '@kbn/i18n';
 import moment from 'moment';
+import { css } from '@emotion/react';
 import { CSP_MOMENT_FORMAT } from '../../../common/constants';
 import { useLatestFindings } from '../latest_findings/use_latest_findings';
 import cisLogoIcon from '../../../assets/icons/cis_logo.svg';
@@ -144,7 +145,7 @@ const timelineItemsForFinding = (matchingFindings, setShowModal) => {
                 </div>
                 <div style={{ marginTop: 25, gap: 6, display: 'flex' }}>
                   {mf.result.evaluation === 'failed' && (
-                    <EuiButton fill size={'s'} iconType={'starFilledSpace'}>
+                    <EuiButton fill size={'s'} iconType={'bug'}>
                       Remedy
                     </EuiButton>
                   )}
@@ -225,26 +226,73 @@ const TimelineTab = ({ data: finding, snapshots }) => {
     <>
       <EuiTimeline items={timelineItemsForFinding(matchingFindings, setShowModal)} />
       {showModal && (
-        <EuiModal onClose={() => setShowModal(false)}>
-          <EuiModalHeader>
+        <EuiModal
+          onClose={() => setShowModal(false)}
+          maxWidth={1600}
+          css={css`
+            .euiModal .euiModal__flex {
+              max-height: 90vh;
+            }
+          `}
+        >
+          <EuiModalHeader style={{ display: 'flex', justifyContent: 'flex-start', gap: 20 }}>
+            <EuiIcon type="searchProfilerApp" size="xxl" />
             <EuiModalHeaderTitle>
-              <h1>Modal title</h1>
+              <h1>Investigate Change</h1>
             </EuiModalHeaderTitle>
           </EuiModalHeader>
-
           <EuiModalBody>
-            <EuiSpacer />
-            <div style={{ display: 'flex' }}>
-              <EuiCodeBlock language="html" isCopyable>
-                {showModal.previousFinding.result.evaluation}
-              </EuiCodeBlock>
-              <EuiCodeBlock language="html" isCopyable>
-                {showModal.currentFinding.result.evaluation}
-              </EuiCodeBlock>
+            <EuiSpacer size="xs" />
+            <div style={{ display: 'flex', gap: 20 }}>
+              {/* previous */}
+              <EuiPanel hasShadow={false} hasBorder>
+                <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+                  <EuiTitle size="s">
+                    <h5>{`Previous State - ${moment(
+                      showModal.previousFinding.snapshot_id
+                    ).fromNow()}`}</h5>
+                  </EuiTitle>
+                  <CspEvaluationBadge type={showModal.previousFinding.result.evaluation} />
+                </div>
+                <EuiSpacer size="xs" />
+                <EuiText color="subdued" size={'xs'} style={{ marginBottom: 10 }}>{`${moment(
+                  showModal.previousFinding.snapshot_id
+                ).format(CSP_MOMENT_FORMAT)} | snapshot id: ${
+                  showModal.previousFinding.snapshot_id
+                }`}</EuiText>
+                <EuiCodeBlock language="json" lineNumbers isCopyable overflowHeight={400}>
+                  {JSON.stringify(showModal.previousFinding, null, 2)}
+                </EuiCodeBlock>
+              </EuiPanel>
+
+              {/* current */}
+              <EuiPanel hasShadow={false} hasBorder>
+                <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+                  <EuiTitle size="s">
+                    <h5>{`Investigated State - ${moment(
+                      showModal.currentFinding.snapshot_id
+                    ).fromNow()}`}</h5>
+                  </EuiTitle>
+                  <CspEvaluationBadge type={showModal.currentFinding.result.evaluation} />
+                </div>
+                <EuiSpacer size="xs" />
+                <EuiText color="subdued" size={'xs'} style={{ marginBottom: 10 }}>{`${moment(
+                  showModal.currentFinding.snapshot_id
+                ).format(CSP_MOMENT_FORMAT)} | snapshot id: ${
+                  showModal.currentFinding.snapshot_id
+                }`}</EuiText>
+                <EuiCodeBlock language="json" lineNumbers isCopyable overflowHeight={400}>
+                  {JSON.stringify(showModal.currentFinding, null, 2)}
+                </EuiCodeBlock>
+              </EuiPanel>
             </div>
           </EuiModalBody>
 
           <EuiModalFooter>
+            <EuiButton iconType={'alert'}>Alert on next change</EuiButton>
+            {showModal.currentFinding.result.evaluation === 'failed' && (
+              <EuiButton iconType={'bug'}>Remedy</EuiButton>
+            )}
             <EuiButton onClick={() => setShowModal(false)} fill>
               Close
             </EuiButton>

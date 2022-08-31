@@ -72,6 +72,7 @@ const FindingsTableComponent = ({
       baseFindingsColumns['rule.section'],
       baseFindingsColumns['rule.tags'],
       createColumnWithFilters(baseFindingsColumns.cluster_id, { onAddFilter }),
+      createColumnWithFilters(baseFindingsColumns._unique_id, { onAddFilter }),
       baseFindingsColumns['@timestamp'],
     ],
     [onAddFilter]
