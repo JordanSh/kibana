@@ -6,24 +6,47 @@
  */
 
 import React from 'react';
-import { EuiFlexGroup, EuiFlexItem, EuiText } from '@elastic/eui';
-import { EuiIcon } from '@elastic/eui';
-import { FormattedMessage } from '@kbn/i18n-react';
+import { EuiNotificationEvent } from '@elastic/eui';
+import { ShortIdBadge } from '../../../components/short_id_badge';
 
-export const CasesTable = () => {
+export const CasesTable = ({ changes, handleInvestigateClick }) => {
+  console.log(changes);
   return (
-    <EuiFlexGroup direction="column" justifyContent="center" alignItems="center">
-      <EuiFlexItem grow={false}>
-        <EuiIcon type="visualizeApp" size="xl" />
-      </EuiFlexItem>
-      <EuiFlexItem grow={false}>
-        <EuiText size="xs">
-          <FormattedMessage
-            id="xpack.csp.dashboard.casesTable.placeholderTitle"
-            defaultMessage="Coming soon"
+    <div>
+      {changes.map((e) => {
+        return (
+          <EuiNotificationEvent
+            key={e.x}
+            id={e.x}
+            type={'Warning'}
+            // severity={<ShortIdBadge value={e.x} />}
+            badgeColor={'warning'}
+            iconType={'logoSecurity'}
+            time={`Last hour`}
+            // title={
+            //   <>
+            //     <ShortIdBadge value={e.x} />{' '}
+            //     <span style={{ fontWeight: 400, fontSize: 12 }}>
+            //       Evaluation was changed recently
+            //     </span>
+            //   </>
+            // }
+            isRead={false}
+            primaryAction={'Click here to investigate cycles for this finding'}
+            messages={[
+              <>
+                <ShortIdBadge value={e.x} /> <span>Evaluation was changed recently</span>
+              </>,
+            ]}
+            // onRead={onRead}
+            // onOpenContextMenu={onOpenContextMenu}
+            onClickPrimaryAction={(v) => handleInvestigateClick(v, e)}
           />
-        </EuiText>
-      </EuiFlexItem>
-    </EuiFlexGroup>
+        );
+      })}
+    </div>
   );
 };
+{
+  /* <ShortIdBadge value={event.x} />*/
+}

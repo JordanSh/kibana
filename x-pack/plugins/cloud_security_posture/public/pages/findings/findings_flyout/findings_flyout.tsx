@@ -146,7 +146,7 @@ const timelineItemsForFinding = (matchingFindings, setShowModal) => {
                 <div style={{ marginTop: 25, gap: 6, display: 'flex' }}>
                   {mf.result.evaluation === 'failed' && (
                     <EuiButton fill size={'s'} iconType={'bug'}>
-                      Remedy
+                      Remediate
                     </EuiButton>
                   )}
                   <EuiButton size={'s'} iconType={'alert'}>
@@ -291,7 +291,7 @@ const TimelineTab = ({ data: finding, snapshots }) => {
           <EuiModalFooter>
             <EuiButton iconType={'alert'}>Alert on next change</EuiButton>
             {showModal.currentFinding.result.evaluation === 'failed' && (
-              <EuiButton iconType={'bug'}>Remedy</EuiButton>
+              <EuiButton iconType={'bug'}>Remediate</EuiButton>
             )}
             <EuiButton onClick={() => setShowModal(false)} fill>
               Close
