@@ -7,7 +7,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { CSP_LATEST_FINDINGS_DATA_VIEW, ES_PIT_ROUTE_PATH } from '../../../../common/constants';
+import { BENCHMARK_SCORE_INDEX_DEFAULT_NS, ES_PIT_ROUTE_PATH } from '../../../../common/constants';
 import { useKibana } from '../../../common/hooks/use_kibana';
 import { FINDINGS_PIT_KEEP_ALIVE } from '../constants';
 
@@ -29,7 +29,11 @@ export const useFindingsEsPit = (queryKey: string) => {
     ['findingsPitQuery', queryKey],
     () =>
       http.post<string>(ES_PIT_ROUTE_PATH, {
-        query: { index_name: CSP_LATEST_FINDINGS_DATA_VIEW, keep_alive: FINDINGS_PIT_KEEP_ALIVE },
+        // query: { index_name: CSP_LATEST_FINDINGS_DATA_VIEW, keep_alive: FINDINGS_PIT_KEEP_ALIVE },
+        query: {
+          index_name: BENCHMARK_SCORE_INDEX_DEFAULT_NS,
+          keep_alive: FINDINGS_PIT_KEEP_ALIVE,
+        },
       }),
     {
       enabled: !isPitIdSet,

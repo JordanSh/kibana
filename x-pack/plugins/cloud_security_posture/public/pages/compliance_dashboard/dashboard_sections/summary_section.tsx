@@ -27,6 +27,13 @@ const summarySectionWrapperStyle = {
 export const SummarySection = ({ complianceData }: { complianceData: ComplianceDashboardData }) => {
   const navToFindings = useNavigateFindings();
 
+  const handleTrendElementClick = (elements) => {
+    const [element] = elements;
+    const [elementData] = element;
+
+    navToFindings({ snapshot_id: elementData.datum.snapshot });
+  };
+
   const handleElementClick = (elements: PartitionElementEvent[]) => {
     const [element] = elements;
     const [layerValue] = element;
@@ -46,6 +53,14 @@ export const SummarySection = ({ complianceData }: { complianceData: ComplianceD
     navToFindings({ 'result.evaluation': RULE_FAILED });
   };
 
+  const handleInvestigateClick = (e, change) => {
+    const snapshots = change.s.map((snap) => `snapshot_id : ${snap}`);
+
+    const query = `_unique_id : "${e}" and (${snapshots.join(' or ')})`;
+
+    navToFindings(query);
+  };
+
   return (
     <EuiFlexGrid columns={3} style={summarySectionWrapperStyle}>
       <EuiFlexItem>
@@ -59,6 +74,7 @@ export const SummarySection = ({ complianceData }: { complianceData: ComplianceD
             data={complianceData.stats}
             trend={complianceData.trend}
             partitionOnElementClick={handleElementClick}
+            onTrendElementClick={handleTrendElementClick}
           />
         </ChartPanel>
       </EuiFlexItem>
@@ -82,7 +98,10 @@ export const SummarySection = ({ complianceData }: { complianceData: ComplianceD
             defaultMessage: 'Open Cases',
           })}
         >
-          <CasesTable />
+          <CasesTable
+            changes={complianceData.changes}
+            handleInvestigateClick={handleInvestigateClick}
+          />
         </ChartPanel>
       </EuiFlexItem>
     </EuiFlexGrid>

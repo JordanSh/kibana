@@ -106,7 +106,7 @@ export const useLatestFindings = (options: UseFindingsOptions) => {
       };
     },
     {
-      enabled: options.enabled,
+      enabled: true,
       keepPreviousData: true,
       onError: (err: Error) => showErrorToast(toasts, err),
       onSuccess: ({ newPitId }) => {

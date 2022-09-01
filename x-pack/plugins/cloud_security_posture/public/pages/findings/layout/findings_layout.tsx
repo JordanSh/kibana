@@ -12,13 +12,13 @@ import {
   EuiTableActionsColumnType,
   EuiTableFieldDataColumnType,
   EuiTitle,
-  EuiToolTip,
   PropsOf,
 } from '@elastic/eui';
 import { css } from '@emotion/react';
 import { i18n } from '@kbn/i18n';
 import { euiThemeVars } from '@kbn/ui-theme';
 import type { Serializable } from '@kbn/utility-types';
+import { ShortIdBadge } from '../../../components/short_id_badge';
 import { getPrimaryRuleTags } from '../../../common/utils/get_primary_rule_tags';
 import { TimestampTableCell } from '../../../components/timestamp_table_cell';
 import { ColumnNameWithTooltip } from '../../../components/column_name_with_tooltip';
@@ -76,13 +76,9 @@ const baseColumns = [
       />
     ),
     truncateText: true,
-    width: '10%',
+    width: 160,
     sortable: true,
-    render: (filename: string) => (
-      <EuiToolTip position="top" content={filename} anchorClassName="eui-textTruncate">
-        <span>{filename}</span>
-      </EuiToolTip>
-    ),
+    render: (value) => <ShortIdBadge value={value} />,
   },
   {
     field: 'result.evaluation',
@@ -157,9 +153,18 @@ const baseColumns = [
         )}
       />
     ),
-    width: '10%',
+    width: 160,
     truncateText: true,
     sortable: true,
+    render: (value) => <ShortIdBadge value={value} />,
+  },
+  {
+    field: '_unique_id',
+    name: 'Finding ID',
+    width: 160,
+    truncateText: true,
+    sortable: true,
+    render: (value) => <ShortIdBadge value={value} />,
   },
   {
     field: '@timestamp',

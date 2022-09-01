@@ -112,7 +112,13 @@ const convertTrendToEpochTime = (trend: PostureTrend) => ({
   timestamp: moment(trend.timestamp).valueOf(),
 });
 
-const ComplianceTrendChart = ({ trend }: { trend: PostureTrend[] }) => {
+const ComplianceTrendChart = ({
+  trend,
+  onTrendElementClick,
+}: {
+  trend: PostureTrend[];
+  onTrendElementClick: any;
+}) => {
   const epochTimeTrend = trend.map(convertTrendToEpochTime);
   const {
     services: { charts },
@@ -121,6 +127,7 @@ const ComplianceTrendChart = ({ trend }: { trend: PostureTrend[] }) => {
   return (
     <Chart>
       <Settings
+        onElementClick={onTrendElementClick}
         theme={charts.theme.useChartsTheme()}
         baseTheme={charts.theme.useChartsBaseTheme()}
         showLegend={false}
@@ -166,6 +173,7 @@ export const CloudPostureScoreChart = ({
   trend,
   id,
   partitionOnElementClick,
+  onTrendElementClick,
 }: CloudPostureScoreChartProps) => (
   <EuiFlexGroup direction="column" gutterSize="none">
     <EuiFlexItem grow={4}>
@@ -180,7 +188,7 @@ export const CloudPostureScoreChart = ({
     </EuiFlexItem>
     <EuiHorizontalRule margin="xs" />
     <EuiFlexItem grow={6}>
-      <ComplianceTrendChart trend={trend} />
+      <ComplianceTrendChart trend={trend} onTrendElementClick={onTrendElementClick} />
     </EuiFlexItem>
   </EuiFlexGroup>
 );

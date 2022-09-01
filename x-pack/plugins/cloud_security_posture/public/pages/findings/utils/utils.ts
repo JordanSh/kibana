@@ -116,7 +116,7 @@ export const getFindingsPageSizeInfo = ({
 });
 
 export const getFindingsCountAggQuery = () => ({
-  count: { terms: { field: 'result.evaluation' } },
+  count: { terms: { field: 'result.evaluation.keyword' } },
 });
 
 export const getAggregationCount = (buckets: estypes.AggregationsStringRareTermsBucketKeys[]) => {
