@@ -53,7 +53,7 @@ export function LogsSection({ bucketSize }: Props) {
   const { data, status } = useFetcher(
     () => {
       if (bucketSize) {
-        return getDataHandler('infra_logs')?.fetchData({
+        const d = getDataHandler('infra_logs')?.fetchData({
           absoluteTime: { start: absoluteStart, end: absoluteEnd },
           relativeTime: { start: relativeStart, end: relativeEnd },
           bucketSize,
