@@ -21,6 +21,7 @@ import {
 import { CellActionsProvider } from '@kbn/cell-actions';
 import { type HttpSetup } from '@kbn/core-http-browser';
 import { SHOW_MULTIFIELDS, SORT_DEFAULT_ORDER_SETTING } from '@kbn/discover-utils';
+import { useExpandableFlyoutApi } from '@kbn/expandable-flyout';
 import { type DataTableRecord } from '@kbn/discover-utils/types';
 import {
   type EuiDataGridCellValueElementProps,
@@ -36,6 +37,7 @@ import { generateFilters } from '@kbn/data-plugin/public';
 import { type DocViewFilterFn } from '@kbn/unified-doc-viewer/types';
 import useLocalStorage from 'react-use/lib/useLocalStorage';
 
+import { UniversalPanelKey } from '../../flyout/entity_details/shared/constants';
 import { type CriticalityLevelWithUnassigned } from '../../../common/entity_analytics/asset_criticality/types';
 import { useKibana } from '../../common/lib/kibana';
 
@@ -155,6 +157,20 @@ const AllAssets = ({
     columnsLocalStorageKey,
     defaultQuery: getDefaultQuery,
     nonPersistedFilters,
+  });
+
+  const { openFlyout } = useExpandableFlyoutApi();
+
+  openFlyout({
+    right: {
+      id: UniversalPanelKey,
+      params: {
+        entityName: 'test',
+        // contextID: contextId,
+        // scopeId: timelineID,
+        // isDraggable,
+      },
+    },
   });
 
   const {

@@ -8,6 +8,7 @@
 import React, { memo, useCallback } from 'react';
 import { ExpandableFlyout, type ExpandableFlyoutProps } from '@kbn/expandable-flyout';
 import { useEuiTheme } from '@elastic/eui';
+import { UniversalPanel } from './entity_details/universal_right';
 import { SessionViewPanelProvider } from './document_details/session_view/context';
 import type { SessionViewPanelProps } from './document_details/session_view';
 import { SessionViewPanel } from './document_details/session_view';
@@ -46,7 +47,7 @@ import { HostDetailsPanel, HostDetailsPanelKey } from './entity_details/host_det
 import { NetworkPanel, NetworkPanelKey, NetworkPreviewPanelKey } from './network_details';
 import type { AnalyzerPanelExpandableFlyoutProps } from './document_details/analyzer_panels';
 import { AnalyzerPanel } from './document_details/analyzer_panels';
-import { UserPanelKey, HostPanelKey } from './entity_details/shared/constants';
+import { UserPanelKey, HostPanelKey, UniversalPanelKey } from './entity_details/shared/constants';
 
 /**
  * List of all panels that will be used within the document details expandable flyout.
@@ -158,6 +159,10 @@ const expandableFlyoutDocumentsPanels: ExpandableFlyoutProps['registeredPanels']
     component: (props) => (
       <NetworkPanel {...(props as NetworkExpandableFlyoutProps).params} isPreviewMode />
     ),
+  },
+  {
+    key: UniversalPanelKey,
+    component: (props) => <UniversalPanel {...props} />,
   },
 ];
 
