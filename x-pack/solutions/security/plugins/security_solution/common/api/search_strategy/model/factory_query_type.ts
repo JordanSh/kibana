@@ -23,6 +23,10 @@ export enum ServicesQueries {
   observedDetails = 'observedServiceDetails',
 }
 
+export enum UniversalEntityQueries {
+  observedDetails = 'observedEntityDetails',
+}
+
 export enum NetworkQueries {
   details = 'networkDetails',
   dns = 'dns',
@@ -56,6 +60,7 @@ export type FactoryQueryTypes =
   | HostsQueries
   | UsersQueries
   | ServicesQueries
+  | UniversalEntityQueries
   | NetworkQueries
   | EntityRiskQueries
   | CtiQueries

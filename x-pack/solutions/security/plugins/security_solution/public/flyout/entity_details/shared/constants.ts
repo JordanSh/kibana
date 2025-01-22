@@ -28,13 +28,14 @@ export const MANAGED_USER_QUERY_ID = 'managedUserDetailsQuery';
 export const HostPanelKey: HostPanelExpandableFlyoutProps['key'] = 'host-panel';
 export const UserPanelKey: UserPanelExpandableFlyoutProps['key'] = 'user-panel';
 export const ServicePanelKey: ServicePanelExpandableFlyoutProps['key'] = 'service-panel';
-export const UniversalPanelKey: UniversalPanelExpandableFlyoutProps['key'] = 'universal-panel';
+export const UniversalEntityPanelKey: UniversalPanelExpandableFlyoutProps['key'] =
+  'universal-entity-panel';
 
 export const EntityPanelKeyByType: Record<EntityType, string | undefined> = {
   [EntityType.host]: HostPanelKey,
   [EntityType.user]: UserPanelKey,
   [EntityType.service]: ServicePanelKey,
-  [EntityType.universal]: undefined, // TODO create universal flyout?
+  [EntityType.universal]: UniversalEntityPanelKey,
 };
 
 // TODO rename all params and merged them as 'entityName'
@@ -42,5 +43,5 @@ export const EntityPanelParamByType: Record<EntityType, string | undefined> = {
   [EntityType.host]: 'hostName',
   [EntityType.user]: 'userName',
   [EntityType.service]: 'serviceName',
-  [EntityType.universal]: undefined, // TODO create universal flyout?
+  [EntityType.universal]: 'entityName',
 };

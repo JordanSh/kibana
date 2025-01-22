@@ -37,7 +37,7 @@ import { generateFilters } from '@kbn/data-plugin/public';
 import { type DocViewFilterFn } from '@kbn/unified-doc-viewer/types';
 import useLocalStorage from 'react-use/lib/useLocalStorage';
 
-import { UniversalPanelKey } from '../../flyout/entity_details/shared/constants';
+import { UniversalEntityPanelKey } from '../../flyout/entity_details/shared/constants';
 import { type CriticalityLevelWithUnassigned } from '../../../common/entity_analytics/asset_criticality/types';
 import { useKibana } from '../../common/lib/kibana';
 
@@ -163,11 +163,11 @@ const AllAssets = ({
 
   openFlyout({
     right: {
-      id: UniversalPanelKey,
+      id: UniversalEntityPanelKey,
       params: {
         entityName: 'test',
-        // contextID: contextId,
-        // scopeId: timelineID,
+        contextID: 'all-assets-table',
+        scopeId: 'all-assets-table',
         // isDraggable,
       },
     },

@@ -38,6 +38,7 @@ import type { UserEcs } from './user';
 import type { WinlogEcs } from './winlog';
 import type { ZeekEcs } from './zeek';
 import type { ServiceEcs } from './service';
+import type { UniversalEntityEcs } from './universal_entity';
 export * from './ecs_fields';
 
 export { EventCategory, EventCode };
@@ -76,6 +77,7 @@ export type {
   WinlogEcs,
   ZeekEcs,
   ServiceEcs,
+  UniversalEntityEcs,
 };
 
 // Security Solution Extension of the Elastic Common Schema

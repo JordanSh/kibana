@@ -88,6 +88,7 @@ import type {
   RiskScoreRequestOptions,
   RiskScoreRequestOptionsInput,
   ServicesQueries,
+  UniversalEntityQueries,
   ThreatIntelSourceRequestOptions,
   ThreatIntelSourceRequestOptionsInput,
   UserAuthenticationsRequestOptions,
@@ -108,6 +109,7 @@ export * from './risk_score';
 export * from './network';
 export * from './users';
 export * from './services';
+export * from './universal_entity';
 export * from './first_last_seen';
 export * from './related_entities';
 
@@ -116,6 +118,7 @@ export type FactoryQueryTypes =
   | UsersQueries
   | NetworkQueries
   | ServicesQueries
+  | UniversalEntityQueries
   | EntityRiskQueries
   | CtiQueries
   | typeof FirstLastSeenQuery
@@ -141,6 +144,8 @@ export type StrategyResponseType<T extends FactoryQueryTypes> = T extends HostsQ
   ? UsersStrategyResponse
   : T extends ServicesQueries.observedDetails
   ? ObservedServiceDetailsStrategyResponse
+  : T extends UniversalEntityQueries.observedDetails
+  ? ObservedUniversalEntityDetailsStrategyResponse
   : T extends NetworkQueries.details
   ? NetworkDetailsStrategyResponse
   : T extends NetworkQueries.dns
@@ -245,6 +250,8 @@ export type StrategyRequestType<T extends FactoryQueryTypes> = T extends HostsQu
   ? UsersRequestOptions
   : T extends ServicesQueries.observedDetails
   ? ObservedServiceDetailsRequestOptions
+  : T extends UniversalEntityQueries.observedDetails
+  ? ObservedUniversalEntityDetailsRequestOptions
   : T extends NetworkQueries.details
   ? NetworkDetailsRequestOptions
   : T extends NetworkQueries.dns
