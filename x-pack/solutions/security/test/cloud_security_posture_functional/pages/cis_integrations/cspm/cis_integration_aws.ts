@@ -38,7 +38,7 @@ export default function (providerContext: FtrProviderContext) {
   const saveIntegrationPolicyTimeout = 1000 * 30; // 30 seconds
 
   // Failing: See https://github.com/elastic/kibana/issues/224777
-  describe.skip('Test adding Cloud Security Posture Integrations CSPM AWS', function () {
+  describe('Test adding Cloud Security Posture Integrations CSPM AWS', function () {
     this.tags(['cloud_security_posture_cis_integration_cspm_aws']);
     let cisIntegration: typeof pageObjects.cisAddIntegration;
 
@@ -101,7 +101,7 @@ export default function (providerContext: FtrProviderContext) {
       });
     });
 
-    describe.skip('CIS_AWS Organization Manual Assume Role', () => {
+    describe('CIS_AWS Organization Manual Assume Role', () => {
       it('CIS_AWS Organization Manual Assume Role Workflow', async () => {
         const roleArn = 'RoleArnTestValue';
         await cisIntegration.clickOptionButton(CIS_AWS_OPTION_TEST_ID);
