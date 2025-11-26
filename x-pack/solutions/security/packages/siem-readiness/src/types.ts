@@ -21,3 +21,18 @@ export interface CategoriesResponse {
   rawCategoriesMap: CategoryGroup[];
   mainCategoriesMap: CategoryGroup[];
 }
+
+export interface IndexInfo {
+  indexName: string;
+  docs: number;
+}
+
+export interface CategoryGroup {
+  category: string;
+  indices: IndexInfo[];
+}
+
+export interface CategoriesResponse {
+  rawCategoriesMap: CategoryGroup[];
+  mainCategoriesMap: CategoryGroup[];
+}
