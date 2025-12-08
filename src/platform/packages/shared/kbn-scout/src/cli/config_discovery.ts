@@ -12,9 +12,9 @@ import type { Command, FlagsReader } from '@kbn/dev-cli-runner';
 import { SCOUT_PLAYWRIGHT_CONFIGS_PATH } from '@kbn/scout-info';
 import path from 'path';
 import type { ToolingLog } from '@kbn/tooling-log';
-import { getScoutPlaywrightConfigs, DEFAULT_TEST_PATH_PATTERNS } from '../servers/configs';
+import { getScoutPlaywrightConfigs, DEFAULT_TEST_PATH_PATTERNS } from '../config';
 import { measurePerformance } from '../common';
-import { validateWithScoutCiConfig } from '../servers/configs/discovery';
+import { validateWithScoutCiConfig } from '../config/discovery';
 
 const getCountByType = (configs: Map<string, any>, type: 'plugin' | 'package'): number => {
   return Array.from(configs.values()).filter((config) => config.type === type).length;

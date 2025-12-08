@@ -26,7 +26,6 @@ import { ConnectorAdapterRegistry } from '../../../../connector_adapters/connect
 import type { ConstructorOptions } from '../../../../rules_client';
 import { RulesClient } from '../../../../rules_client';
 import { RULE_SAVED_OBJECT_TYPE } from '../../../../saved_objects';
-import { gapFillStatus, gapStatus } from '../../../../../common';
 
 describe('getRuleIdsWithGaps', () => {
   let rulesClient: RulesClient;
@@ -49,8 +48,7 @@ describe('getRuleIdsWithGaps', () => {
   const params = {
     start: '2024-01-01T00:00:00.000Z',
     end: '2024-01-02T00:00:00.000Z',
-    statuses: [gapStatus.UNFILLED, gapStatus.PARTIALLY_FILLED],
-    highestPriorityGapFillStatuses: [gapFillStatus.UNFILLED, gapFillStatus.IN_PROGRESS],
+    statuses: ['unfilled', 'partially_filled'],
   };
 
   const filter = { type: 'mock_filter' };
@@ -114,10 +112,7 @@ describe('getRuleIdsWithGaps', () => {
     it('should get authorization filter with correct parameters', async () => {
       eventLogClient.aggregateEventsWithAuthFilter.mockResolvedValue({
         aggregations: {
-          latest_gap_timestamp: {
-            value: null,
-          },
-          by_rule: {
+          unique_rule_ids: {
             buckets: [],
           },
         },
@@ -152,23 +147,8 @@ describe('getRuleIdsWithGaps', () => {
   describe('event log aggregation', () => {
     it('should aggregate events with correct parameters', async () => {
       const mockAggregations = {
-        by_rule: {
-          buckets: [
-            {
-              key: 'rule-1',
-              totalUnfilledDurationMs: { value: 100 },
-              totalInProgressDurationMs: { value: 0 },
-              totalFilledDurationMs: { value: 0 },
-              totalDurationMs: { value: 100 },
-            },
-            {
-              key: 'rule-2',
-              totalUnfilledDurationMs: { value: 0 },
-              totalInProgressDurationMs: { value: 50 },
-              totalFilledDurationMs: { value: 0 },
-              totalDurationMs: { value: 50 },
-            },
-          ],
+        unique_rule_ids: {
+          buckets: [{ key: 'rule-1' }, { key: 'rule-2' }],
         },
         latest_gap_timestamp: {
           value: 1704067200000,
@@ -186,27 +166,17 @@ describe('getRuleIdsWithGaps', () => {
         filter,
         expect.objectContaining({
           filter: `event.action: gap AND event.provider: alerting AND not kibana.alert.rule.gap.deleted:true AND kibana.alert.rule.gap.range <= "2024-01-02T00:00:00.000Z" AND kibana.alert.rule.gap.range >= "2024-01-01T00:00:00.000Z" AND (kibana.alert.rule.gap.status : unfilled OR kibana.alert.rule.gap.status : partially_filled)`,
-          aggs: expect.objectContaining({
+          aggs: {
             latest_gap_timestamp: { max: { field: '@timestamp' } },
-            by_rule: expect.objectContaining({
-              terms: { field: 'rule.id', size: 10000, order: { oldest_gap_timestamp: 'asc' } },
-              aggs: {
-                totalUnfilledDurationMs: {
-                  sum: { field: 'kibana.alert.rule.gap.unfilled_duration_ms' },
-                },
-                totalInProgressDurationMs: {
-                  sum: { field: 'kibana.alert.rule.gap.in_progress_duration_ms' },
-                },
-                totalFilledDurationMs: {
-                  sum: { field: 'kibana.alert.rule.gap.filled_duration_ms' },
-                },
-                totalDurationMs: {
-                  sum: { field: 'kibana.alert.rule.gap.total_gap_duration_ms' },
-                },
-                oldest_gap_timestamp: { min: { field: '@timestamp' } },
-              },
+            unique_rule_ids: expect.objectContaining({
+              terms: expect.objectContaining({
+                field: 'rule.id',
+                size: 10000,
+                order: { oldest_gap_timestamp: 'asc' },
+              }),
+              aggs: { oldest_gap_timestamp: { min: { field: '@timestamp' } } },
             }),
-          }),
+          },
         })
       );
 
@@ -220,7 +190,9 @@ describe('getRuleIdsWithGaps', () => {
     it('should handle empty aggregation results', async () => {
       eventLogClient.aggregateEventsWithAuthFilter.mockResolvedValue({
         aggregations: {
-          by_rule: { buckets: [] },
+          unique_rule_ids: {
+            buckets: [],
+          },
           latest_gap_timestamp: {
             value: null,
           },
@@ -236,19 +208,24 @@ describe('getRuleIdsWithGaps', () => {
           filter: expect.stringContaining(
             'event.action: gap AND event.provider: alerting AND not kibana.alert.rule.gap.deleted:true'
           ),
-          aggs: expect.objectContaining({
+          aggs: {
             latest_gap_timestamp: { max: { field: '@timestamp' } },
-            by_rule: expect.objectContaining({
-              terms: { field: 'rule.id', size: 10000, order: { oldest_gap_timestamp: 'asc' } },
+            unique_rule_ids: expect.objectContaining({
+              terms: expect.objectContaining({
+                field: 'rule.id',
+                size: 10000,
+                order: { oldest_gap_timestamp: 'asc' },
+              }),
+              aggs: { oldest_gap_timestamp: { min: { field: '@timestamp' } } },
             }),
-          }),
+          },
         })
       );
 
       expect(result).toEqual({
         total: 0,
         ruleIds: [],
-        latestGapTimestamp: undefined,
+        latestGapTimestamp: null,
       });
     });
 
@@ -258,15 +235,6 @@ describe('getRuleIdsWithGaps', () => {
         end: params.end,
       };
 
-      eventLogClient.aggregateEventsWithAuthFilter.mockResolvedValue({
-        aggregations: {
-          by_rule: { buckets: [] },
-          latest_gap_timestamp: {
-            value: null,
-          },
-        },
-      });
-
       await rulesClient.getRuleIdsWithGaps(paramsWithoutStatuses);
 
       expect(eventLogClient.aggregateEventsWithAuthFilter).toHaveBeenCalledWith(
@@ -274,26 +242,22 @@ describe('getRuleIdsWithGaps', () => {
         filter,
         expect.objectContaining({
           filter: `event.action: gap AND event.provider: alerting AND not kibana.alert.rule.gap.deleted:true AND kibana.alert.rule.gap.range <= "2024-01-02T00:00:00.000Z" AND kibana.alert.rule.gap.range >= "2024-01-01T00:00:00.000Z"`,
-          aggs: expect.objectContaining({
+          aggs: {
             latest_gap_timestamp: { max: { field: '@timestamp' } },
-            by_rule: expect.objectContaining({
-              terms: { field: 'rule.id', size: 10000, order: { oldest_gap_timestamp: 'asc' } },
+            unique_rule_ids: expect.objectContaining({
+              terms: expect.objectContaining({
+                field: 'rule.id',
+                size: 10000,
+                order: { oldest_gap_timestamp: 'asc' },
+              }),
+              aggs: { oldest_gap_timestamp: { min: { field: '@timestamp' } } },
             }),
-          }),
+          },
         })
       );
     });
 
     it('should use the default maxRulesToFetch limit when param not provided', async () => {
-      eventLogClient.aggregateEventsWithAuthFilter.mockResolvedValue({
-        aggregations: {
-          by_rule: { buckets: [] },
-          latest_gap_timestamp: {
-            value: null,
-          },
-        },
-      });
-
       await rulesClient.getRuleIdsWithGaps(params);
 
       expect(eventLogClient.aggregateEventsWithAuthFilter).toHaveBeenCalledWith(
@@ -301,7 +265,7 @@ describe('getRuleIdsWithGaps', () => {
         filter,
         expect.objectContaining({
           aggs: expect.objectContaining({
-            by_rule: expect.objectContaining({
+            unique_rule_ids: expect.objectContaining({
               terms: expect.objectContaining({
                 size: 10000,
               }),
@@ -312,15 +276,6 @@ describe('getRuleIdsWithGaps', () => {
     });
 
     it('should respect custom maxRulesToFetch value', async () => {
-      eventLogClient.aggregateEventsWithAuthFilter.mockResolvedValue({
-        aggregations: {
-          by_rule: { buckets: [] },
-          latest_gap_timestamp: {
-            value: null,
-          },
-        },
-      });
-
       await rulesClient.getRuleIdsWithGaps({
         ...params,
         maxRulesToFetch: 123,
@@ -331,7 +286,7 @@ describe('getRuleIdsWithGaps', () => {
         filter,
         expect.objectContaining({
           aggs: expect.objectContaining({
-            by_rule: expect.objectContaining({
+            unique_rule_ids: expect.objectContaining({
               terms: expect.objectContaining({
                 size: 123,
               }),

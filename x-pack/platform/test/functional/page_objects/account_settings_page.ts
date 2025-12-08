@@ -38,7 +38,7 @@ export class AccountSettingsPageObject extends FtrService {
     await confirmPasswordInput.clearValue();
     await confirmPasswordInput.type(newPassword);
 
-    await this.testSubjects.clickWhenNotDisabled('changePasswordFormSubmitButton');
+    await this.testSubjects.click('changePasswordFormSubmitButton');
 
     const toast = await this.testSubjects.find('euiToastHeader', 20000);
     const title = await toast.getVisibleText();

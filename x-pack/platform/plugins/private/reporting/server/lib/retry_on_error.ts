@@ -58,8 +58,7 @@ export const retryOnError = async ({
       );
 
       // delay with some randomness
-      // convert delay to milliseconds and multiply by random number between 1.0 and 2.0
-      await delay(retryDelaySec * 1000 * (1 + Math.random()));
+      await delay(retryDelaySec + 1000 * Math.random());
       return retryOnError({ operation, logger, report, retries, attempt: retryCount });
     }
 

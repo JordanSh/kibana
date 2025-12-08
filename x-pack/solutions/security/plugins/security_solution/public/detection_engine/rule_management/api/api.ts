@@ -13,7 +13,6 @@ import { INTERNAL_ALERTING_API_FIND_RULES_PATH } from '@kbn/alerting-plugin/comm
 import type { ActionType, AsApiContract } from '@kbn/actions-plugin/common';
 import { BASE_ACTION_API_PATH } from '@kbn/actions-plugin/common';
 import type { ActionResult } from '@kbn/actions-plugin/server';
-import type { GapFillStatus } from '@kbn/alerting-plugin/common/constants/gap_status';
 import { convertRulesFilterToKQL } from '../../../../common/detection_engine/rule_management/rule_filtering';
 import type {
   GetPrebuiltRuleBaseVersionRequest,
@@ -71,7 +70,6 @@ import type { RulePreviewResponse, RuleResponse } from '../../../../common/api/d
 
 import { KibanaServices } from '../../../common/lib/kibana';
 import * as i18n from '../../common/translations';
-import { getGapRange } from '../../rule_gaps/api/hooks/utils';
 import type {
   CreateRulesProps,
   ExportDocumentsProps,
@@ -90,7 +88,6 @@ import type {
   UpdateRulesProps,
 } from '../logic/types';
 import type { BootstrapPrebuiltRulesResponse } from '../../../../common/api/detection_engine/prebuilt_rules/bootstrap_prebuilt_rules/bootstrap_prebuilt_rules.gen';
-import { defaultRangeValue } from '../../rule_gaps/constants';
 
 /**
  * Create provided Rule
@@ -196,24 +193,17 @@ export const fetchRules = async ({
     page: 1,
     perPage: 20,
   },
+  gapsRange,
   signal,
 }: FetchRulesProps): Promise<FetchRulesResponse> => {
   const kql = convertRulesFilterToKQL(filterOptions);
-
-  const shouldApplyDefaultGapsRange = Boolean(filterOptions?.gapFillStatuses?.length);
-  const defaultGapsRange = shouldApplyDefaultGapsRange ? getGapRange(defaultRangeValue) : undefined;
 
   const query = {
     page: pagination.page,
     per_page: pagination.perPage,
     sort_field: sortingOptions.field,
     sort_order: sortingOptions.order,
-    ...(filterOptions?.gapFillStatuses?.length
-      ? { gap_fill_statuses: filterOptions.gapFillStatuses }
-      : {}),
-    ...(defaultGapsRange
-      ? { gaps_range_start: defaultGapsRange.start, gaps_range_end: defaultGapsRange.end }
-      : {}),
+    ...(gapsRange ? { gaps_range_start: gapsRange.start, gaps_range_end: gapsRange.end } : {}),
     ...(kql !== '' ? { filter: kql } : {}),
   };
 
@@ -359,12 +349,7 @@ export interface BulkActionErrorResponse {
 }
 
 export type QueryOrIds =
-  | {
-      query: string;
-      ids?: undefined;
-      gapRange?: { start: string; end: string };
-      gapFillStatuses?: GapFillStatus[];
-    }
+  | { query: string; ids?: undefined; gapRange?: { start: string; end: string } }
   | { query?: undefined; ids: string[] };
 
 type PlainBulkAction = {
@@ -432,10 +417,6 @@ export async function performBulkAction({
     run: bulkAction.type === BulkActionTypeEnum.run ? bulkAction.runPayload : undefined,
     gaps_range_start: 'gapRange' in bulkAction ? bulkAction.gapRange?.start : undefined,
     gaps_range_end: 'gapRange' in bulkAction ? bulkAction.gapRange?.end : undefined,
-    gap_fill_statuses:
-      'gapFillStatuses' in bulkAction && bulkAction.gapFillStatuses?.length
-        ? bulkAction.gapFillStatuses
-        : undefined,
     fill_gaps:
       bulkAction.type === BulkActionTypeEnum.fill_gaps ? bulkAction.fillGapsPayload : undefined,
   };

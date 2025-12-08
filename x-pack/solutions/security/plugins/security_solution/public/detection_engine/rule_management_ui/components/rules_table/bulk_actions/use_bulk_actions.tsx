@@ -106,16 +106,13 @@ export const useBulkActions = ({
     actions: { clearRulesSelection, setIsPreflightInProgress },
   } = rulesTableContext;
   const globalQuery = useMemo(() => {
-    const gapRange = filterOptions?.gapFillStatuses?.length
-      ? getGapRange(defaultRangeValue)
+    const gapRange = filterOptions?.showRulesWithGaps
+      ? getGapRange(filterOptions.gapSearchRange ?? defaultRangeValue)
       : undefined;
 
     return {
       query: kql,
       ...(gapRange && { gapRange }),
-      ...(filterOptions?.gapFillStatuses?.length && {
-        gapFillStatuses: filterOptions.gapFillStatuses,
-      }),
     };
   }, [kql, filterOptions]);
 
@@ -478,11 +475,7 @@ export const useBulkActions = ({
           type: BulkActionTypeEnum.edit,
           ...prepareSearchParams({
             ...(isAllSelected
-              ? {
-                  filterOptions,
-                  gapRange: globalQuery.gapRange,
-                  gapFillStatuses: filterOptions.gapFillStatuses,
-                }
+              ? { filterOptions, gapRange: globalQuery.gapRange }
               : { selectedRuleIds }),
             dryRunResult,
           }),

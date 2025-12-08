@@ -29,16 +29,14 @@ const report = new SavedReport({
 
 describe('retryOnError', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.useFakeTimers();
-    jest.spyOn(global, 'setTimeout');
+    jest.resetAllMocks();
     jest.spyOn(global.Math, 'random').mockReturnValue(randomDelayMultiplier);
   });
 
   afterEach(() => {
-    jest.clearAllTimers();
-    jest.useRealTimers();
+    jest.restoreAllMocks();
   });
+
   it(`doesn't retry if operation is successful`, async () => {
     const operationMock = jest.fn().mockResolvedValue('success');
     expect(await retryOnError({ operation: operationMock, retries: 3, report, logger })).toEqual(
@@ -49,24 +47,13 @@ describe('retryOnError', () => {
     expect(logger.info).not.toHaveBeenCalled();
     expect(logger.warn).not.toHaveBeenCalled();
     expect(logger.error).not.toHaveBeenCalled();
-    expect(setTimeout).not.toHaveBeenCalled();
   });
 
   it('logs an error message on retry', async () => {
     const error = new Error('fail');
     const operationMock = jest.fn().mockRejectedValueOnce(error).mockResolvedValue('success');
 
-    const retryPromise = retryOnError({ operation: operationMock, retries: 3, report, logger });
-    await Promise.resolve();
-
-    jest.runAllTimers();
-    await retryPromise;
-
-    expect(setTimeout).toHaveBeenCalledTimes(1);
-    expect(setTimeout).toHaveBeenCalledWith(
-      expect.any(Function),
-      2000 * (1 + randomDelayMultiplier)
-    );
+    await retryOnError({ operation: operationMock, retries: 3, report, logger });
     expect(logger.error).toHaveBeenCalledTimes(1);
     expect(logger.error.mock.calls[0][0]).toEqual(
       `Retrying report generation for report[${
@@ -91,7 +78,6 @@ describe('retryOnError', () => {
     expect(logger.info).not.toHaveBeenCalled();
     expect(logger.warn).not.toHaveBeenCalled();
     expect(logger.error).not.toHaveBeenCalled();
-    expect(setTimeout).not.toHaveBeenCalled();
     expect(operationMock).toHaveBeenCalledTimes(1);
   });
 
@@ -107,7 +93,6 @@ describe('retryOnError', () => {
     expect(logger.info).not.toHaveBeenCalled();
     expect(logger.warn).not.toHaveBeenCalled();
     expect(logger.error).not.toHaveBeenCalled();
-    expect(setTimeout).not.toHaveBeenCalled();
     expect(operationMock).toHaveBeenCalledTimes(1);
   });
 
@@ -120,28 +105,10 @@ describe('retryOnError', () => {
       .mockRejectedValueOnce(error)
       .mockResolvedValue('success');
 
-    const retryPromise = retryOnError({ operation: operationMock, retries: 3, report, logger });
-    await Promise.resolve();
-
-    jest.runAllTimersAsync().catch(() => {});
-    expect(await retryPromise).toEqual('success');
+    expect(await retryOnError({ operation: operationMock, retries: 3, report, logger })).toEqual(
+      'success'
+    );
     // initial attempt + 3 retries
-    expect(setTimeout).toHaveBeenCalledTimes(3);
-    expect(setTimeout).toHaveBeenNthCalledWith(
-      1,
-      expect.any(Function),
-      2000 * (1 + randomDelayMultiplier)
-    );
-    expect(setTimeout).toHaveBeenNthCalledWith(
-      2,
-      expect.any(Function),
-      4000 * (1 + randomDelayMultiplier)
-    );
-    expect(setTimeout).toHaveBeenNthCalledWith(
-      3,
-      expect.any(Function),
-      8000 * (1 + randomDelayMultiplier)
-    );
     expect(operationMock).toHaveBeenCalledTimes(4);
     expect(logger.error).toHaveBeenCalledTimes(3);
     expect(logger.error.mock.calls[0][0]).toEqual(
@@ -169,30 +136,14 @@ describe('retryOnError', () => {
     const error = new Error('fail');
     const operationMock = jest.fn().mockRejectedValue(error);
 
-    const retryPromise = retryOnError({ operation: operationMock, retries: 3, report, logger });
-    await Promise.resolve();
-
-    jest.runAllTimersAsync().catch(() => {});
-    await expect(retryPromise).rejects.toThrowErrorMatchingInlineSnapshot(`"fail"`);
+    await expect(
+      retryOnError({ operation: operationMock, retries: 3, report, logger })
+    ).rejects.toThrowErrorMatchingInlineSnapshot(`"fail"`);
+    expect(logger.error).toHaveBeenCalledTimes(3);
 
     // initial attempt + 3 retries
     expect(operationMock).toHaveBeenCalledTimes(4);
-    expect(setTimeout).toHaveBeenCalledTimes(3);
-    expect(setTimeout).toHaveBeenNthCalledWith(
-      1,
-      expect.any(Function),
-      2000 * (1 + randomDelayMultiplier)
-    );
-    expect(setTimeout).toHaveBeenNthCalledWith(
-      2,
-      expect.any(Function),
-      4000 * (1 + randomDelayMultiplier)
-    );
-    expect(setTimeout).toHaveBeenNthCalledWith(
-      3,
-      expect.any(Function),
-      8000 * (1 + randomDelayMultiplier)
-    );
+
     expect(logger.error.mock.calls[0][0]).toEqual(
       `Retrying report generation for report[${
         report._id

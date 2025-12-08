@@ -9,9 +9,6 @@
 
 import type { RegisteredTopNavMenuData } from './top_nav_menu_data';
 
-/**
- * @deprecated This registry will be removed once TopNavMenuBeta becomes the default.
- */
 export class TopNavMenuExtensionsRegistry {
   private menuItems: RegisteredTopNavMenuData[];
 

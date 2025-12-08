@@ -22,9 +22,6 @@ export const getGapRange = (gapRange: GapRangeValue) => {
     case GapRangeValue.LAST_7_D:
       duration = moment.duration(7, 'days');
       break;
-    case GapRangeValue.LAST_90_D:
-      duration = moment.duration(90, 'days');
-      break;
   }
 
   const start = now.clone().subtract(duration).toISOString();
